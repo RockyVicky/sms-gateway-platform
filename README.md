@@ -1,4 +1,4 @@
-# SMS Gateway SaaS Platform: Self-Hosted Direct-to-SIM Messaging Infrastructure
+# 📱 SMS Gateway SaaS Platform: Self-Hosted Direct-to-SIM Messaging Infrastructure
 
 [![Build Status](https://img.shields.io/badge/build-passing-brightgreen.svg)]()
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
@@ -7,9 +7,44 @@
 [![React](https://img.shields.io/badge/dashboard-React%20v19-blue.svg)]()
 [![React Native](https://img.shields.io/badge/client-React%20Native%20v0.86-cyan.svg)]()
 
-A high-performance, self-hosted SMS Gateway SaaS platform that turns Android devices into physical SMS relay nodes. The platform enables developers and businesses to dispatch low-cost transaction messages (OTP, alerts, notifications) using local carrier SIM cards (such as Jio) instead of expensive third-party SMS providers like Twilio.
+A high-performance, self-hosted SMS Gateway SaaS platform that turns Android devices into physical SMS relay nodes. The platform enables developers and businesses to dispatch low-cost transaction messages (OTP, alerts, notifications) using local carrier SIM cards instead of expensive third-party SMS providers like Twilio.
 
-The project is structured as a production-grade TypeScript **monorepo** featuring robust queueing, real-time WebSocket links, dynamic analytics, and automatic TLS containerized deployment.
+---
+
+## 🖼️ Screenshots & Demo
+
+### Admin Dashboard Overview
+![Dashboard Interface Mockup](./docs/images/dashboard.png)
+*Admin panel displaying real-time delivery performance KPIs, cellular status alerts, and message volume graphs.*
+
+### Connected Devices Gateway
+![Mobile Device UI](./docs/images/devices.png)
+*Live device registry showcasing online status flags, battery indicators, and SIM signal levels.*
+
+### Message Logs & History
+![Message Logs](./docs/images/messages.png)
+*Detailed SMS audit logs featuring server-side pagination, search filtering, and state records.*
+
+### Analytics & Insights
+![Analytics Insights](./docs/images/analytics.png)
+*Visual breakdown of transmission latencies, queue counts, and carrier dispatch success rates.*
+
+### Interactive Walkthrough Demo
+![Walkthrough Demo](./docs/images/demo.gif)
+*A live animation showing the dashboard triggering an SMS dispatch and the mobile node transmitting it in real-time.*
+
+---
+
+## ✨ Features
+
+* **Direct SIM Card Relay**: Bypasses SMS API aggregators by using native Android telephony API libraries on physical SIM cards.
+* **Robust Message Queueing**: Employs [BullMQ](https://github.com/taskforcesh/bullmq) (backed by Redis) to prevent message drops and handle spikes in throughput.
+* **Real-Time Device Synchrony**: Employs a Socket.io WebSocket link to handle persistent device connectivity, active socket registry, and live device telemetry.
+* **Live Analytics Dashboard**: React dashboard utilizing Recharts to track delivery statistics, OTP ratios, active device signals, and battery states in real-time.
+* **OTP Generation & Verification**: Ready-made endpoints featuring automatic 5-minute code expiration, 3-attempt brute-force protection, and phone-level rate limits.
+* **Automatic Failure Recovery**: Immediate retry patterns on failure to send, and queue persistence in the event that devices temporarily lose signal.
+* **Structured JSON Logging**: Integrates Pino for production-grade structured JSON output, ready for Datadog, ELK, or CloudWatch ingestion.
+* **Containerized Deployment**: Clean Caddy proxy configuration with automated HTTPS SSL provisioning and persistent volumes.
 
 ---
 
@@ -51,84 +86,72 @@ flowchart TD
     Websocket -- Update status --> DB
 ```
 
-For a detailed breakdown of schemas, state transitions, and background wakelocks, see the [System Architecture Documentation](./docs/architecture.md).
-
----
-
-## ✨ Key Features
-
-* **Direct SIM Card Relay**: Bypasses SMS API aggregators by using native Android telephony API libraries on physical SIM cards.
-* **Robust Message Queueing**: Employs [BullMQ](https://github.com/taskforcesh/bullmq) (backed by Redis) to prevent message drops and handle spikes in throughput gracefully.
-* **Real-Time Device Synchrony**: Employs a Socket.io WebSocket link to handle persistent device connectivity, active socket registry, and live device telemetry.
-* **Live Analytics Dashboard**: React dashboard utilizing Recharts to track delivery statistics, OTP ratios, active device signals, and battery states in real-time.
-* **OTP Generation & Verification**: Ready-made endpoints featuring automatic 5-minute code expiration, 3-attempt brute-force protection, and phone-level rate limits.
-* **Automatic Failure Recovery**: Immediate retry patterns on failure to send, and queue persistence in the event that devices temporarily lose signal.
-* **Structured JSON Logging**: Integrates Pino for production-grade structured JSON output, ready for Datadog, ELK, or CloudWatch ingestion.
-* **Containerized Deployment**: Clean Caddy proxy configuration with automated HTTPS SSL provisioning and persistent volumes.
+For detailed architectural breakdowns, see the sub-diagrams:
+* 👉 [High-Level Architecture](./docs/diagrams/high-level-architecture.md)
+* 👉 [SMS Delivery Flow](./docs/diagrams/sms-delivery-flow.md)
+* 👉 [Device Registration Flow](./docs/diagrams/device-registration-flow.md)
+* 👉 [OTP Verification Flow](./docs/diagrams/otp-verification-flow.md)
+* 👉 [Queue Processing Flow](./docs/diagrams/queue-processing-flow.md)
+* 👉 [Failure Recovery Flow](./docs/diagrams/failure-recovery-flow.md)
+* 👉 [Authentication Flow](./docs/diagrams/authentication-flow.md)
 
 ---
 
 ## 🛠️ Technology Stack
 
-| Workload / Component | Technology Stack |
-| :--- | :--- |
-| **Monorepo Engine** | NPM Workspaces, TypeScript (Strict Mode) |
-| **Backend API Server** | NestJS v11, Express, Passport JWT, Mongoose, Pino Logger |
-| **Message Queue & Cache** | Redis, BullMQ |
-| **Real-time Gateway** | Socket.io (`@nestjs/websockets` & `@nestjs/platform-socket.io`) |
-| **Frontend Dashboard** | React v19, Vite, Material UI (MUI v6), TanStack React Query, Recharts |
-| **Mobile Gateway Daemon** | React Native v0.86, Android Native Java Modules, Telephony APIs |
-| **Container Infrastructure** | Docker, Docker Compose, Caddy Reverse Proxy (Automatic SSL) |
+| Workload / Component | Technology Stack | Role & Functionality |
+| :--- | :--- | :--- |
+| **Monorepo Engine** | NPM Workspaces, TypeScript (Strict Mode) | Manages package structures, paths, and local dependency sharing. |
+| **Backend API Server** | NestJS v11, Express, Passport JWT, Mongoose, Pino Logger | Exposes REST APIs, manages schemas, and routes websocket connections. |
+| **Message Queue & Cache** | Redis, BullMQ | Handles job buffering, rate-limiting rules, worker pools, and retries. |
+| **Real-time Gateway** | Socket.io (`@nestjs/websockets`) | Holds persistent TCP lines to mobile clients for low-latency dispatch. |
+| **Frontend Dashboard** | React v19, Vite, Material UI (MUI v6), TanStack Query, Recharts | Provides the management console interface for administrators. |
+| **Mobile Gateway Daemon** | React Native v0.86, Android Native Java Modules, Telephony APIs | Native module bridging JS calls to the Android `SmsManager` system. |
+| **Container Infrastructure** | Docker, Docker Compose, Caddy Reverse Proxy (Automatic SSL) | Runs all services inside unified networks with automated Let's Encrypt. |
 
 ---
 
-## 📂 Monorepo Structure
+## 🔄 SMS Lifecycle
 
-```text
-message-service/
-├── apps/
-│   ├── backend/           # NestJS REST API and WebSockets Gateway server
-│   ├── dashboard/         # React 19 / Vite management interface
-│   └── mobile/            # React Native Android client (telephony bridge)
-├── packages/
-│   ├── config/            # Shared compiler configurations
-│   ├── types/             # Shared TypeScript typings and schemas
-│   └── utils/             # Cryptographic hash and phone formatting utilities
-├── infra/
-│   ├── caddy/             # Caddy reverse proxy templates
-│   ├── api.Dockerfile     # Dockerfile for containerizing the NestJS server
-│   └── docker-compose.yml # Composes MongoDB, Redis, API, and Caddy services
-├── docs/
-│   ├── architecture.md    # Detailed diagrams of flows, lifecycles, and database designs
-│   ├── portfolio-summary.md# Technical decisions, scale calculations, and summaries
-│   ├── interview-notes.md # Architecture notes and technical choices for recruiters
-│   └── history/           # Development history, logs, and audit templates
-└── package.json           # Monorepo workspaces and script config
-```
+The system guarantees reliable out-of-band delivery:
+1. **Ingestion**: The client calls `POST /api/sms/send`. The NestJS server validates the inputs and saves a database record under `status: pending`.
+2. **Buffering**: The job is pushed to the BullMQ Redis queue, transitioning the database record to `status: queued`.
+3. **Throttling**: The BullMQ worker pops the job, adhering to a strict **1 SMS every 2 seconds** policy per device, transitioning the status to `status: processing`.
+4. **WebSocket Dispatch**: The worker finds the online Socket ID for the device and emits an `sms:send` event.
+5. **SIM Transmission**: The Android device receives the payload, invokes Android's native `SmsManager`, and triggers cellular transmission.
+6. **Acknowledge**: The phone listens for the cell tower receipt and emits `sms:status` back to the server, completing the lifecycle as `status: sent` or `status: failed`.
+
+For a sequence breakdown, see the [SMS Delivery Diagram](./docs/diagrams/sms-delivery-flow.md).
 
 ---
 
-## 🚀 Quick Start & Development Setup
+## 🔒 Security
+
+* **Dual Authorization Pipeline**: Supports both JWT Session tokens (for UI operations) and secure SHA-256 hashed API Keys (`x-api-key` header) for automated client integration.
+* **API Rate Limiting Protection**: Integrates `nestjs-throttler` to protect against brute-force attacks on `/login` (max 10/min) and API flooding on SMS endpoints.
+* **SIM Abuse & Spam Shield**: Includes a custom `PhoneThrottlerGuard` limiting OTP dispatches to a maximum of 3 requests per phone number per 5 minutes.
+* **Strict Validation Pipeline**: Input payloads are filtered through class-validator filters (`whitelist: true`) to avoid document injection.
+
+For details, view the [Authentication Architecture Diagram](./docs/diagrams/authentication-flow.md).
+
+---
+
+## 📈 Scalability
+
+* **Mongoose Database Indexing**: Schema files contain indexes on query-intensive properties (`recipient`, `status`, `deviceId`, and `createdAt` descending) to maintain query performance under millions of logs.
+* **Carrier rate throttling**: Configured BullMQ worker parameters (`limiter: { max: 1, duration: 2000 }`) to enforce a global delay of 2 seconds between SMS sends, preventing carrier suspension for spam.
+* **Decoupled Queue Failover**: Job failures undergo exponential backoff retries, and are stored in the queue error state (acting as a Dead-Letter Queue) upon exhaustion.
+
+For details, see the [Queue Processing Flow Diagram](./docs/diagrams/queue-processing-flow.md).
+
+---
+
+## 🚀 Deployment
 
 ### Prerequisites
-* **Node.js**: `v18.x` or `v20.x` (LTS versions recommended)
-* **Docker & Docker Compose** (For databases and quick deployments)
-* **Android Studio & Physical Device** (Required to run and compile the mobile host daemon)
-
-### 1. Repository Setup & Dependencies Installation
-Clone the repository and install all node modules at the root directory level:
-```bash
-git clone https://github.com/yourusername/sms-gateway-platform.git
-cd sms-gateway-platform
-npm install
-```
-
-### 2. Configure Environment Variables
-Copy and set up `.env` files using our [.env.example](file:///e:/Autonomous/files/message-service/.env.example) configuration guidelines:
-* Copy root-level configs into `apps/backend/.env`
-* Copy root-level configs into `apps/mobile/.env`
-
----
+* **Node.js**: `v18.x` or `v20.x` (LTS)
+* **Docker & Docker Compose**
+* **Android Studio & Physical Device** (with SIM card and cellular network)
 
 ### 💻 Local Development Setup
 
@@ -144,6 +167,7 @@ docker compose -f infra/docker-compose.yml up mongodb redis -d
 npm run start:dev --workspace=@sms-gateway/backend
 ```
 The backend API is now running locally on: [http://localhost:3000/api](http://localhost:3000/api)
+Interactive Swagger API Docs are available at: [http://localhost:3000/api/docs](http://localhost:3000/api/docs)
 
 #### Step 3: Run React Web Dashboard
 ```bash
@@ -169,56 +193,6 @@ To deploy the entire production stack including the Caddy reverse proxy and auto
 ```bash
 docker compose -f infra/docker-compose.yml up --build -d
 ```
-
----
-
-## 📡 API & Interactive Swagger Documentation
-
-Interactive OpenAPI/Swagger documentation is built directly into the server. When the backend is running, navigate to:
-👉 **[http://localhost:3000/api/docs](http://localhost:3000/api/docs)**
-
-This provides interactive schemas, parameters, payload examples, and try-it-out capabilities for all endpoints:
-
-* **Authentication & API Keys**: Login/register dashboard accounts, and manage programmatic client API keys.
-* **SMS Dispatch Engine**: Single and bulk transactional message submissions.
-* **OTP Delivery & Verification**: Trigger and verify secure SMS one-time passwords.
-* **Devices Gateway Management**: List connected gateway nodes with battery and signal telemetry.
-
----
-
-## 🔒 Production Security Hardening
-
-* **Dual Authorization Pipeline**: Supports both JWT Session tokens (for UI operations) and secure SHA-256 hashed API Keys (`x-api-key` header) for automated client integration.
-* **API Rate Limiting Protection**: Integrates `nestjs-throttler` to protect against brute-force attacks on `/login` (max 10/min) and API flooding on SMS endpoints.
-* **SIM Abuse & Spam Shield**: Includes a custom `PhoneThrottlerGuard` limiting OTP dispatches to a maximum of 3 requests per phone number per 5 minutes.
-* **Strict Validation Pipeline**: Input payloads are filtered through class-validator filters (`whitelist: true`) to avoid document injection.
-
----
-
-## ⚙️ Scale and Performance Hardening
-
-* **Mongoose Database Indexing**: Schema files contain indexes on query-intensive properties (`recipient`, `status`, `deviceId`, and `createdAt` descending) to maintain query performance under millions of logs.
-* **Carrier rate throttling**: Configured BullMQ worker parameters (`limiter: { max: 1, duration: 2000 }`) to enforce a global delay of 2 seconds between SMS sends, preventing carrier suspension for spam.
-* **Decoupled Queue Failover**: Job failures undergo exponential backoff retries, and are stored in the queue error state (acting as a Dead-Letter Queue) upon exhaustion.
-
----
-
-## 🛣️ Future Roadmap
-
-* [ ] **Multi-SIM Smart Routing**: Automatically direct messages to the cheapest SIM card depending on carrier code.
-* [ ] **Offline Resilient Buffer**: Local SQLite storage inside the Android client to hold outbound messages during network connection drops.
-* [ ] **WhatsApp & Email Integration**: Unified messaging interface handling fallback to WhatsApp when SIM network is offline.
-* [ ] **Analytics Webhooks**: Deliver real-time status callbacks (`message.delivered`, `message.failed`) directly to client webhooks.
-
----
-
-## 📸 Media Placeholders
-
-### Dashboard Interface Mockup
-![Dashboard Visual](./docs/history/PROJECT.md) *Placeholder: Add your admin console dashboard view here*
-
-### Mobile Gateway App
-![Mobile Device UI](./docs/history/ProjectInfo.md) *Placeholder: Sideload screenshot of your React Native client status screen here*
 
 ---
 
