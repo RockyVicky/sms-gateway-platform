@@ -1,0 +1,47 @@
+# Dependency directories
+node_modules/
+jspm_packages/
+
+# Build artifacts
+dist/
+build/
+out/
+.next/
+*.tsbuildinfo
+
+# IDE files
+.idea/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# System / OS files
+.DS_Store
+Thumbs.db
+
+# Environments and secrets
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+*.pem
+*.key
+
+# Android-specific artifacts
+apps/mobile/android/app/build/
+apps/mobile/android/.gradle/
+apps/mobile/android/local.properties
+*.keystore
+*.jks
+
+# iOS-specific artifacts
+apps/mobile/ios/Pods/
+apps/mobile/ios/build/
+apps/mobile/ios/*.xcworkspace
+
+# Scratch files
+scratch/
