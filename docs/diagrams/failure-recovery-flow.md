@@ -4,13 +4,13 @@ How the system handles physical connection drops, native app restarts, socket ti
 
 ```mermaid
 graph TD
-    subgraph Failures
+    subgraph Failures ["Failures"]
         F_Conn[1. Socket Disconnect]
         F_Timeout[2. No App ACK Timeout]
         F_Carrier[3. Carrier Error / Insufficient Balance]
     end
 
-    subgraph Recovery Paths
+    subgraph RecoveryPaths ["Recovery Paths"]
         %% Path 1
         F_Conn --> P1_Retry[App attempts reconnect with exponential backoff]
         P1_Retry --> P1_Offline[Backend marks device offline in DB]

@@ -4,30 +4,30 @@ The SMS Gateway SaaS Platform is structured as a distributed, decoupled system d
 
 ```mermaid
 graph TB
-    subgraph Client Application Layer
+    subgraph ClientAppLayer ["Client Application Layer"]
         SDK[Third-Party REST SDK / Client App]
         User[Dashboard Web App Client]
     end
 
-    subgraph API Gateway & Reverse Proxy
+    subgraph APIGateway ["API Gateway & Reverse Proxy"]
         Caddy[Caddy Reverse Proxy]
     end
 
-    subgraph Service Layer (Docker Network)
+    subgraph ServiceLayer ["Service Layer (Docker Network)"]
         API[NestJS HTTP Backend Server]
         WS[Socket.io WebSockets Gateway]
     end
 
-    subgraph Asynchronous Processing & Cache
+    subgraph AsyncProcessing ["Asynchronous Processing & Cache"]
         Redis[(Redis Cache & PubSub)]
         Queue[BullMQ Message Queue]
     end
 
-    subgraph Database Layer
+    subgraph DatabaseLayer ["Database Layer"]
         DB[(MongoDB Database)]
     end
 
-    subgraph Remote Host Gateway Nodes
+    subgraph RemoteNodes ["Remote Host Gateway Nodes"]
         App[React Native Daemon]
         Native[Android Native SmsManager]
         SIM[Physical SIM Card]

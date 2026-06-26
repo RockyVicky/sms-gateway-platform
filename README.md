@@ -54,11 +54,11 @@ This platform consists of three core workloads and a shared packaging layer:
 
 ```mermaid
 flowchart TD
-    subgraph Client Application / Developer
+    subgraph ClientApp ["Client Application / Developer"]
         API_Call[REST API / SDK Client]
     end
 
-    subgraph Server Stack (Docker Compose VPS)
+    subgraph ServerStack ["Server Stack (Docker Compose VPS)"]
         Backend[NestJS API Server]
         DB[(MongoDB Database)]
         Queue[BullMQ Redis Queue]
@@ -66,7 +66,7 @@ flowchart TD
         Caddy[Caddy Reverse Proxy]
     end
 
-    subgraph Client Node (Physical Android Device)
+    subgraph ClientNode ["Client Node (Physical Android Device)"]
         App[React Native Daemon]
         Native[Android Native SmsManager]
         SIM[Physical SIM Card]

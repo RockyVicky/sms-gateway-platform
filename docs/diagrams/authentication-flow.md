@@ -4,27 +4,27 @@ Dual authentication architecture separating admin user dashboard sessions from t
 
 ```mermaid
 graph TD
-    subgraph Client Application / Developer
+    subgraph ClientApp ["Client Application / Developer"]
         Dev[Programmatic API Client / SDK]
         Admin[Web Dashboard Administrator]
     end
 
-    subgraph Authentication Gateways (NestJS)
+    subgraph AuthGateways ["Authentication Gateways (NestJS)"]
         JWT_Guard[JwtAuthGuard / Passport JWT]
         API_Key_Guard[ApiKeyGuard / SHA-256 Auth]
     end
 
-    subgraph Security Operations
+    subgraph SecurityOps ["Security Operations"]
         Verify_JWT[Decrypt & Verify Cookie Signature]
         Hash_API[Compute SHA-256 hash of header x-api-key]
     end
 
-    subgraph Data Stores
+    subgraph DataStores ["Data Stores"]
         UserDB[(Users Collection)]
         DeviceDB[(Devices Collection)]
     end
 
-    subgraph Request Authorized
+    subgraph RequestAuthorized ["Request Authorized"]
         Resource[Protected REST Controller Endpoint]
     end
 
