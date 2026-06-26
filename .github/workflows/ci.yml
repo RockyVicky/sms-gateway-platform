@@ -33,8 +33,8 @@ jobs:
       - name: Run ESLint static check
         run: npm run lint
 
-      - name: Build shared packages
-        run: npm run build --workspaces --if-present
+      - name: Build monorepo in topological order
+        run: npm run build
 
       - name: Run unit and integration tests
         run: npm run test --if-present
