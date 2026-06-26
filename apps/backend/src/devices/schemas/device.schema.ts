@@ -6,22 +6,26 @@ export type DeviceDocument = Device & Document;
 
 @Schema({ timestamps: true })
 export class Device {
+  // unique: true automatically registers a unique index for fast O(1) device ID lookups
   @Prop({ required: true, unique: true })
   deviceId: string;
 
   @Prop({ required: true })
   name: string;
 
-  @Prop({ required: true })
+  // index: true is added because phoneNumber is queried frequently during registration verification and client listings
+  @Prop({ required: true, index: true })
   phoneNumber: string;
 
   @Prop({ required: true })
   provider: string;
 
+  // index: true is added because we query by status (e.g. finding 'online' devices) to dispatch SMS routing requests
   @Prop({
     type: String,
     enum: ['online', 'offline', 'paused'],
     default: 'offline',
+    index: true,
   })
   status: DeviceStatus;
 

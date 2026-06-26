@@ -10,6 +10,7 @@ export class User {
   @Prop({ required: true })
   name: string;
 
+  // unique: true automatically registers a unique index in MongoDB to guarantee uniqueness and enable O(1) lookups on email queries
   @Prop({ required: true, unique: true, lowercase: true, trim: true })
   email: string;
 
