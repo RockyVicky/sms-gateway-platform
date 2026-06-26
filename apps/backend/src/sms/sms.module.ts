@@ -11,7 +11,18 @@ import { AuthModule } from '../auth/auth.module';
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: Message.name, schema: MessageSchema }]),
-    BullModule.registerQueue({ name: 'sms-delivery' }),
+    BullModule.registerQueue({
+      name: 'sms-delivery',
+      defaultJobOptions: {
+        attempts: 3,
+        backoff: {
+          type: 'exponential',
+          delay: 30000, // 30 seconds initial delay before retry
+        },
+        removeOnComplete: true, // Clean up successful jobs to save Redis memory
+        removeOnFail: false, // Retain failed jobs in the failed queue state (acting as a Redis DLQ)
+      },
+    }),
     DevicesModule,
     AuthModule,
   ],
