@@ -1,0 +1,20 @@
+{
+  "name": "sms-gateway-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "npm run build --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present",
+    "lint": "npm run lint --workspaces --if-present"
+  },
+  "dependencies": {
+    "@nestjs/platform-express": "11.1.27",
+    "class-transformer": "0.5.1",
+    "class-validator": "0.15.1",
+    "socket.io-client": "4.8.3"
+  }
+}

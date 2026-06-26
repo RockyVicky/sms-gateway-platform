@@ -1,0 +1,15 @@
+sms.yourdomain.com {
+    reverse_proxy /api/* api:3000
+    reverse_proxy /socket.io/* api:3000 {
+        header_up Host {host}
+        header_up X-Real-IP {remote}
+        transport http {
+            dial_timeout 10s
+        }
+    }
+    
+    # Static dashboard hosting
+    root * /srv/dashboard
+    file_server
+    try_files {path} /index.html
+}
