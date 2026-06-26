@@ -51,16 +51,19 @@ flowchart TD
     Websocket -- Update status --> DB
 ```
 
+For a detailed breakdown of schemas, state transitions, and background wakelocks, see the [System Architecture Documentation](./docs/architecture.md).
+
 ---
 
 ## ✨ Key Features
 
 * **Direct SIM Card Relay**: Bypasses SMS API aggregators by using native Android telephony API libraries on physical SIM cards.
 * **Robust Message Queueing**: Employs [BullMQ](https://github.com/taskforcesh/bullmq) (backed by Redis) to prevent message drops and handle spikes in throughput gracefully.
-* **Real-Time Device Synchrony**: Employs a Socket.io WebSocket link to handle persistent device connectivity, active socket registry, and live device statistics.
+* **Real-Time Device Synchrony**: Employs a Socket.io WebSocket link to handle persistent device connectivity, active socket registry, and live device telemetry.
 * **Live Analytics Dashboard**: React dashboard utilizing Recharts to track delivery statistics, OTP ratios, active device signals, and battery states in real-time.
-* **OTP Generation & Verification**: Ready-made endpoints featuring automatic 5-minute code expiration and 3-attempt brute-force protection.
-* **Automatic Failures Recovery**: Immediate retry patterns on failure to send, and queue persistence in the event that devices temporarily lose signal.
+* **OTP Generation & Verification**: Ready-made endpoints featuring automatic 5-minute code expiration, 3-attempt brute-force protection, and phone-level rate limits.
+* **Automatic Failure Recovery**: Immediate retry patterns on failure to send, and queue persistence in the event that devices temporarily lose signal.
+* **Structured JSON Logging**: Integrates Pino for production-grade structured JSON output, ready for Datadog, ELK, or CloudWatch ingestion.
 * **Containerized Deployment**: Clean Caddy proxy configuration with automated HTTPS SSL provisioning and persistent volumes.
 
 ---
@@ -70,7 +73,7 @@ flowchart TD
 | Workload / Component | Technology Stack |
 | :--- | :--- |
 | **Monorepo Engine** | NPM Workspaces, TypeScript (Strict Mode) |
-| **Backend API Server** | NestJS v11, Express, Passport JWT, Mongoose |
+| **Backend API Server** | NestJS v11, Express, Passport JWT, Mongoose, Pino Logger |
 | **Message Queue & Cache** | Redis, BullMQ |
 | **Real-time Gateway** | Socket.io (`@nestjs/websockets` & `@nestjs/platform-socket.io`) |
 | **Frontend Dashboard** | React v19, Vite, Material UI (MUI v6), TanStack React Query, Recharts |
@@ -96,8 +99,9 @@ message-service/
 │   ├── api.Dockerfile     # Dockerfile for containerizing the NestJS server
 │   └── docker-compose.yml # Composes MongoDB, Redis, API, and Caddy services
 ├── docs/
-│   ├── architecture.md    # Detail diagrams of flows, lifecycles, and database designs
+│   ├── architecture.md    # Detailed diagrams of flows, lifecycles, and database designs
 │   ├── portfolio-summary.md# Technical decisions, scale calculations, and summaries
+│   ├── interview-notes.md # Architecture notes and technical choices for recruiters
 │   └── history/           # Development history, logs, and audit templates
 └── package.json           # Monorepo workspaces and script config
 ```
@@ -168,35 +172,34 @@ docker compose -f infra/docker-compose.yml up --build -d
 
 ---
 
-## 📡 API Overview (Sample Endpoints)
+## 📡 API & Interactive Swagger Documentation
 
-| Endpoint | Method | Auth | Description |
-| :--- | :--- | :--- | :--- |
-| `POST /api/auth/register` | `POST` | Public | Register a new client / dashboard administrator |
-| `POST /api/auth/login` | `POST` | Public | Login credentials and returns JWT bearer tokens |
-| `POST /api/devices/register` | `POST` | Public | Registers a physical device node with hardware ID |
-| `POST /api/sms/send` | `POST` | JWT/Key | Enqueues a single transaction SMS to delivery queue |
-| `POST /api/sms/send-bulk` | `POST` | JWT/Key | Enqueues multiple SMS requests for batch dispatching |
-| `POST /api/otp/send` | `POST` | JWT/Key | Generates, hashes, and initiates 6-digit numeric OTP |
-| `POST /api/otp/verify` | `POST` | JWT/Key | Verifies user OTP input against database hash records |
+Interactive OpenAPI/Swagger documentation is built directly into the server. When the backend is running, navigate to:
+👉 **[http://localhost:3000/api/docs](http://localhost:3000/api/docs)**
 
-### Example SMS Request Payload (`POST /api/sms/send`)
-```json
-{
-  "deviceId": "device_dev_1",
-  "recipient": "+919876543210",
-  "content": "Alert: Your service backup completed successfully at 10:00 AM."
-}
-```
+This provides interactive schemas, parameters, payload examples, and try-it-out capabilities for all endpoints:
+
+* **Authentication & API Keys**: Login/register dashboard accounts, and manage programmatic client API keys.
+* **SMS Dispatch Engine**: Single and bulk transactional message submissions.
+* **OTP Delivery & Verification**: Trigger and verify secure SMS one-time passwords.
+* **Devices Gateway Management**: List connected gateway nodes with battery and signal telemetry.
 
 ---
 
-## 🔒 Security Hardening
+## 🔒 Production Security Hardening
 
-* **API Keys & Bearer Auth**: Supports both signed JWT tokens (sessions) and secure SHA-256 hashed API Keys (`x-api-key`) for program access.
-* **OTP Brute-Force Shield**: Prevents script abuse by blocking verify requests after 3 unsuccessful attempts and invalidating previous verification entries.
-* **Safe Device Registration**: Handshake authentication enforces public RSA keys mappings for secure payload checks.
-* **Strict Validation Pipeline**: Input payloads are filtered through class-validator filters (`whitelist: true`) to avoid document injections.
+* **Dual Authorization Pipeline**: Supports both JWT Session tokens (for UI operations) and secure SHA-256 hashed API Keys (`x-api-key` header) for automated client integration.
+* **API Rate Limiting Protection**: Integrates `nestjs-throttler` to protect against brute-force attacks on `/login` (max 10/min) and API flooding on SMS endpoints.
+* **SIM Abuse & Spam Shield**: Includes a custom `PhoneThrottlerGuard` limiting OTP dispatches to a maximum of 3 requests per phone number per 5 minutes.
+* **Strict Validation Pipeline**: Input payloads are filtered through class-validator filters (`whitelist: true`) to avoid document injection.
+
+---
+
+## ⚙️ Scale and Performance Hardening
+
+* **Mongoose Database Indexing**: Schema files contain indexes on query-intensive properties (`recipient`, `status`, `deviceId`, and `createdAt` descending) to maintain query performance under millions of logs.
+* **Carrier rate throttling**: Configured BullMQ worker parameters (`limiter: { max: 1, duration: 2000 }`) to enforce a global delay of 2 seconds between SMS sends, preventing carrier suspension for spam.
+* **Decoupled Queue Failover**: Job failures undergo exponential backoff retries, and are stored in the queue error state (acting as a Dead-Letter Queue) upon exhaustion.
 
 ---
 
