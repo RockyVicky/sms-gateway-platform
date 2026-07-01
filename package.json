@@ -10,6 +10,7 @@
     "build:packages": "npm run build --workspace=@sms-gateway/types --workspace=@sms-gateway/utils",
     "build:apps": "npm run build --workspace=@sms-gateway/backend --workspace=@sms-gateway/dashboard",
     "build": "npm run build:packages && npm run build:apps",
+    "test:ci": "npm run test --workspace=@sms-gateway/backend --if-present",
     "test": "npm run test --workspaces --if-present",
     "lint": "npm run lint --workspaces --if-present"
   },

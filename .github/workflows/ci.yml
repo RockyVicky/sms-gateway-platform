@@ -37,4 +37,5 @@ jobs:
         run: npm run build
 
       - name: Run unit and integration tests
-        run: npm run test --if-present
+        run: npm run test:ci
+
