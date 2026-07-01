@@ -149,7 +149,7 @@ For details, see the [Queue Processing Flow Diagram](./docs/diagrams/queue-proce
 ## 🚀 Deployment
 
 ### Prerequisites
-* **Node.js**: `v18.x` or `v20.x` (LTS)
+* **Node.js**: `v22.x` (LTS)
 * **Docker & Docker Compose**
 * **Android Studio & Physical Device** (with SIM card and cellular network)
 

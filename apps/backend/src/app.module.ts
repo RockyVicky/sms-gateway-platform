@@ -54,28 +54,35 @@ import { OtpModule } from './otp/otp.module';
       }),
       inject: [ConfigService],
     }),
-    ThrottlerModule.forRoot([
-      {
-        name: 'global',
-        ttl: 60000, // 1 minute
-        limit: 100, // max 100 requests per minute globally per IP
+    ThrottlerModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => {
+        const isProd = configService.get<string>('NODE_ENV') === 'production';
+        return [
+          {
+            name: 'global',
+            ttl: 60000,
+            limit: isProd ? 100 : 10000,
+          },
+          {
+            name: 'login',
+            ttl: 60000,
+            limit: isProd ? 10 : 1000,
+          },
+          {
+            name: 'sms',
+            ttl: 10000,
+            limit: isProd ? 5 : 1000,
+          },
+          {
+            name: 'otp',
+            ttl: 300000,
+            limit: isProd ? 3 : 100,
+          },
+        ];
       },
-      {
-        name: 'login',
-        ttl: 60000, // 1 minute
-        limit: 10, // max 10 login requests per minute per IP (prevent brute force)
-      },
-      {
-        name: 'sms',
-        ttl: 10000, // 10 seconds
-        limit: 5, // max 5 SMS submissions per 10 seconds per IP (prevent flooding)
-      },
-      {
-        name: 'otp',
-        ttl: 300000, // 5 minutes
-        limit: 3, // max 3 OTP requests per 5 minutes per phone
-      },
-    ]),
+    }),
     AuthModule,
     DevicesModule,
     SmsModule,
